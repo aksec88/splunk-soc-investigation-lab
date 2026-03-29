@@ -1,4 +1,4 @@
-# Splunk 101 Capstone — FRONTDESK-PC1 Compromise Investigation
+# Splunk SOC Investigation Lab — Endpoint Compromise Analysis
 
 ## Objective
 
@@ -47,7 +47,7 @@ Defined the investigation boundaries based on the reported suspicious activity.
 
 *Ref 1 — Splunk time picker set to investigation window (12:55–13:10 UTC on 10/15/2025)*
 
-![Ref 1 — Splunk Time Range](screenshots/s1-time-range.png)
+![Ref 1 — Splunk Time Picker](screenshots/S1%20–%20Splunk%20Time%20Picker%20.png)
 
 ---
 
@@ -63,7 +63,7 @@ index="mydfir-lab1" host="FRONTDESK-PC1" EventCode=1
 
 *Ref 2 — Broad process timeline showing normal activity (Chrome, OneDrive, rundll32) followed by python.exe at 13:00:33*
 
-![Ref 2 — Broad Process Timeline](screenshots/s9-Broad-process-timeline.png)
+![Ref 2 — LogonId 0xac65b1 Activity Timeline](screenshots/S6%20–%20LogonId%200xac65b1%20Activity%20Timeline.png)
 
 Focused on high-risk binaries after identifying the initial anomaly.
 
@@ -80,7 +80,7 @@ index="mydfir-lab1" host="FRONTDESK-PC1" EventCode=1
 
 *Ref 3 — Focused malicious process timeline showing the full attack chain: python.exe → PowerShell → mmc.exe → schtasks.exe across two LogonIds*
 
-![Ref 3 — Malicious Process Timeline](screenshots/s3.png)
+![Ref 3 — Full Malicious Process Timeline](screenshots/S13%20–%20Full%20Malicious%20Process%20Timeline%20(Two%20LogonIds)%5D.png)
 
 ---
 
@@ -96,7 +96,7 @@ index="mydfir-lab1" host="FRONTDESK-PC1" ProcessGuid="{650091ea-9af1-68ef-8e0a-0
 
 *Ref 4 — python.exe process tree showing execution from C:\Users\Ryan.Adams\Music, launched by explorer.exe under LogonId 0xac65b1*
 
-![Ref 4 — python.exe Process Tree](screenshots/s3-python-process-tree.png)
+![Ref 4 — python.exe Process Tree](screenshots/S3%20–%20python.exe%20Process%20Tree%20Root.png)
 
 Confirmed python.exe session attribution.
 
@@ -109,7 +109,7 @@ index="mydfir-lab1" host="FRONTDESK-PC1" EventCode=1
 
 *Ref 5 — python.exe execution details showing User KCD\Ryan.Adams, LogonId 0xac65b1, TerminalSessionId 2, Parent explorer.exe*
 
-![Ref 5 — python.exe Execution Details](screenshots/s2-python-execution1.png)
+![Ref 5 — python.exe Execution](screenshots/S2%20–%20python.exe%20Execution.png)
 
 ---
 
@@ -126,7 +126,7 @@ index="mydfir-lab1" host="FRONTDESK-PC1" Image="*powershell.exe" EventCode=1
 
 *Ref 6 — PowerShell timeline showing four sessions: three launched by explorer.exe under LogonId 0xac65b1, one launched by RuntimeBroker.exe under LogonId 0xac64d7*
 
-![Ref 6 — PowerShell Activity](screenshots/s4-powershell-activity.png)
+![Ref 6 — PowerShell Timeline](screenshots/S4%20–%20PowerShell%20Timeline%20.png)
 
 ---
 
@@ -141,13 +141,13 @@ index="mydfir-lab1" host="FRONTDESK-PC1" (Image="*schtasks.exe" OR Image="*mmc.e
 | sort +_time
 ```
 
-*Ref 7 — Task Scheduler GUI (mmc.exe) opened under LogonId 0xac65b1 at 13:02:14, followed by schtasks.exe creating persistence*
+*Ref 7 — Task Scheduler GUI (mmc.exe) opened across two LogonIds at 13:02:14 and 13:02:15*
 
-![Ref 7 — mmc.exe Session 1](screenshots/s5-mmc-session1.png)
+![Ref 7 — mmc.exe Two LogonIds](screenshots/S5%20–%20mmc.exe%20(Two%20LogonIds).png)
 
-*Ref 8 — Second LogonId (0xac64d7) showing mmc.exe, PowerShell via RuntimeBroker.exe, and schtasks.exe creating the "PythonUpdate" task*
+*Ref 8 — LogonId 0xac64d7 activity showing mmc.exe, PowerShell via RuntimeBroker.exe, and schtasks.exe*
 
-![Ref 8 — mmc.exe Session 2](screenshots/s6-mmc-session2.png)
+![Ref 8 — LogonId 0xac64d7 Activity](screenshots/S7%20–%20LogonId%200xac64d7%20Activity%20Timeline.png)
 
 Confirmed the scheduled task details.
 
@@ -158,9 +158,9 @@ index="mydfir-lab1" host="FRONTDESK-PC1" Image="*schtasks.exe" EventCode=1
 | sort +_time
 ```
 
-*Ref 9 — schtasks.exe creating scheduled task "PythonUpdate" with /create /tn PythonUpdate /tr C:\Users\Ryan.Adams\Music\python.exe at SYSTEM level under LogonId 0xac64d7*
+*Ref 9 — schtasks.exe creating scheduled task "PythonUpdate" with SYSTEM privileges under LogonId 0xac64d7*
 
-![Ref 9 — Scheduled Task Creation](screenshots/s7-schtasks-persistence.png)
+![Ref 9 — schtasks.exe Creating PythonUpdate](screenshots/S11%20–%20schtasks.exe%20Creating%20PythonUpdate.png)
 
 ---
 
@@ -176,7 +176,7 @@ index="mydfir-lab1" host="FRONTDESK-PC1" EventCode=3
 
 *Ref 10 — Full network timeline showing normal Defender/Chrome activity followed by python.exe connecting to C2 (157.245.46.190:8888) and internal recon (172.16.0.7:135, :49669)*
 
-![Ref 10 — Network Activity](screenshots/s10-network-activity.png)
+![Ref 10 — Full Network Timeline](screenshots/S8%20–%20Full%20Network%20Timeline%20(EventCode%203).png)
 
 Pivoted on browser activity to trace the infection vector.
 
@@ -189,7 +189,7 @@ index="mydfir-lab1" host="FRONTDESK-PC1" EventCode=3
 
 *Ref 11 — Chrome network activity immediately before python.exe download, confirming browser-based delivery*
 
-![Ref 11 — Browser Network Activity](screenshots/s8-malicious-processtimeline.png)
+![Ref 11 — Chrome Network Activity](screenshots/S9%20–%20Chrome%20Network%20Activity%20Before%20Download.png)
 
 ---
 
@@ -206,7 +206,7 @@ index="mydfir-lab1" host="FRONTDESK-PC1" EventCode=11
 
 *Ref 12 — Chrome.exe created python.exe at 12:57:00 in C:\Users\Ryan.Adams\Music, confirming browser download as the infection vector*
 
-![Ref 12 — File Creation Event](screenshots/s12-file-creation.png)
+![Ref 12 — Chrome Creating python.exe](screenshots/S10%20–%20Chrome%20Creating%20python.exe%20(EventCode%2011)%5D.png)
 
 ---
 
@@ -221,9 +221,9 @@ index="mydfir-lab1" host="FRONTDESK-PC1" EventCode=1
 | sort +_time
 ```
 
-*Ref 13 — All malicious processes mapped across two LogonIds: 0xac65b1 (initial execution, PowerShell, first mmc.exe) and 0xac64d7 (second mmc.exe, RuntimeBroker PowerShell, schtasks persistence)*
+*Ref 13 — python.exe session attribution under LogonId 0xac65b1*
 
-![Ref 13 — LogonId Correlation](screenshots/s13-logonid-correlation.png)
+![Ref 13 — python.exe Under LogonId 0xac65b1](screenshots/S12%20–%20python.exe%20Under%20LogonId%200xac65b1.png)
 
 ---
 
