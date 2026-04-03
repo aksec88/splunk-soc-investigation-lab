@@ -121,8 +121,7 @@ Validated the external infrastructure using VirusTotal, AbuseIPDB, and ThreatFox
 
 ## Additional Resources
 ***View Full Incident Report
-
-- [KCD SOC Incident Report: FRONTDESK-PC1 Compromise](report/KCD_SOC_Incident_Report.pdf)
+- [KCD SOC Incident Report: FRONTDESK-PC1 Compromise](report/KCD_SOC_Incident_Report_FRONTDESK-PC1_Compromise.pdf)
 
 ## Author
 
