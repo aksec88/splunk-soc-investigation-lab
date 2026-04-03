@@ -8,7 +8,7 @@ A local administrator at Kerning City Dental (KCD) reported unexpected mouse mov
 
 - ***Splunk (SIEM):*** Centralized log aggregation, querying, correlation, and timeline reconstruction
 - **Sysmon**: Endpoint telemetry for process execution, file creation, and network connections
-- ***Windows Event Logs***: Authentication, authorization, privilege activity and security control activity
+- ***Windows Event Logs***: Authentication, authorization, privilege activity, and security control activity
 - ***Zeek***: Network protocol and connection analysis
 - ***Suricata***: IDS alerts validating malicious traffic and C2 behavior
 - ***VirusTotal, AbuseIPDB, ThreatFox***:Threat intelligence and IOC validation
@@ -41,7 +41,7 @@ Identified a password spraying attack from 172[.]16[.]0[.]184 targeting four acc
 ![Privilege Escalation](screenshots/02_Privilege_Escalation.png)
 
 ### Step 3: Defense Evasion
-Confirmed Windows Defender Real-Time Protection was disabled under SYSTEM context shortly after compromise, reducing detection capability prior to payload execution.
+Confirmed Windows Defender Real-Time Protection was disabled under the SYSTEM context shortly after compromise, reducing detection capability before payload execution.
 
 ![Defender Disabled](screenshots/03_Defender_Disabled.png)
 
@@ -51,7 +51,7 @@ Determined that the payload (python.exe) was downloaded via Chrome and written t
 ![Payload Delivery](screenshots/04_Payload_Delivery.png)
 
 ### Step 5: Process Execution & Attacker Activity
-Validated execution of the payload from the user directory, followed by interactive PowerShell activity consistent with hands-on-keyboard attacker control.
+Validated execution of the payload from the user directory, followed by interactive PowerShell activity consistent with hands-on keyboard attacker control.
 
 ![Payload Execution](screenshots/05_Payload_Execution.png)
 
@@ -71,7 +71,7 @@ Identified a scheduled task named "PythonUpdate" configured to execute the paylo
 ![Persistence Scheduled Task](screenshots/08_Persistence_Scheduled_Task.png)
 
 ### Step 9: Lateral Movement Validation
-Correlated authentication, process, and network events across hosts and confirmed all malicious activity was contained to FRONTDESK-PC1.
+Correlated authentication, process, and network events across hosts and confirmed that all malicious activity was contained to FRONTDESK-PC1.
 
 ![Lateral Movement Validation](screenshots/09_Lateral_Movement_Validation.png)
 
@@ -104,7 +104,7 @@ Validated the external infrastructure using VirusTotal, AbuseIPDB, and ThreatFox
 
 ## Detection Opportunities
 
-- High-volume failed logons from single source (EventCode 4625)
+- High-volume failed logons from a single source (EventCode 4625)
 - NTLM network logon activity (Logon Type 3)
 - Privileged logon events (EventCode 4672)
 - Windows Defender tampering or disable events (EventCode 5001)
@@ -120,9 +120,8 @@ Validated the external infrastructure using VirusTotal, AbuseIPDB, and ThreatFox
 - Early user reporting helped contain the incident  
 
 ## Additional Resources
-***View Full Incident Report
-- [KCD SOC Incident Report: FRONTDESK-PC1 Compromise](report/KCD_SOC_Incident_Report_FRONTDESK-PC1_Compromise.pdf)
-
+View Full Incident Report
+- [KCD SOC Incident Report: FRONTDESK-PC1 Compromise](KCD_SOC_Incident_Report_FRONTDESK-PC1_Compromise.pdf)
 ## Author
 
 **Abdul Kuyateh** — SOC Analyst
