@@ -1,76 +1,148 @@
 # Password Spray → C2 Compromise Investigation
-*End‑to‑end SOC investigation of a simulated compromise at Kerning City Dental (KCD).*
+End‑to‑end SOC investigation of a simulated compromise at Kerning City Dental (KCD).
+
+---
 
 ## Project Overview
-Investigated a simulated endpoint compromise using Splunk SIEM, tracing the attack from password spraying to command‑and‑control (C2) activity. Correlated Windows Event Logs, Sysmon, and network telemetry to identify initial access, payload execution, persistence, and external communication, and produced a complete incident timeline with remediation recommendations.
+Analyzed a full intrusion chain on FRONTDESK-PC1 after a user reported suspicious activity. Using Splunk, Windows Event Logs, Sysmon, Zeek, and Suricata, I traced the attack from a password spray to NTLM compromise, privilege escalation, Defender tampering, payload execution, and Sliver C2 communication. I confirmed attempted lateral movement, identified persistence via a scheduled task, validated IOCs with OSINT, and mapped all activity to MITRE ATT&CK. The investigation produced a complete timeline, detection opportunities, and remediation recommendations.
 
 ---
 
 ## Tools & Technologies
-- Splunk (SIEM)
-- Sysmon
-- Windows Event Logs
-- Network Telemetry
-- MITRE ATT&CK Framework
-- Threat Intelligence (VirusTotal, AbuseIPDB)
+- Splunk SIEM (log aggregation, correlation, timeline analysis)
+- Sysmon (process, file, and network telemetry)
+- Windows Event Logs (authentication and security events)
+- Zeek (network protocol visibility)
+- Suricata (IDS alerts and C2 validation)
+- MITRE ATT&CK (technique mapping)
+- Threat Intelligence: VirusTotal, AbuseIPDB, ThreatFox
 
 ---
 
 ## Key Findings
-- Password spraying attack with **157 failed authentication attempts**
-- Successful NTLM authentication leading to account compromise
-- Microsoft Defender disabled to evade detection
-- Malicious payload (`python.exe`) executed from user directory
-- Command‑and‑control (C2) communication to external infrastructure
-- Persistence established via scheduled task (**PythonUpdate**)
+- 157 failed password‑spray attempts led to a successful NTLM logon for Ryan.Adams.
+- The attacker gained immediate administrative privileges after authentication.
+- Microsoft Defender Real‑Time Protection was disabled under SYSTEM.
+- A malicious `python.exe` payload was downloaded via Chrome and executed from a user directory.
+- The host established Sliver C2 connections to **157[.]245[.]46[.]190** on ports **8888** and **9999**.
+- Persistence was created through a scheduled task named **PythonUpdate**.
+- RPC activity showed attempted lateral movement, but none succeeded.
 
 ---
 
 ## Investigation Highlights
-- Correlated logs across **Windows Event Logs, Sysmon, and network telemetry**
-- Reconstructed full attack timeline from initial access to persistence
-- Identified IOCs (IP, domain, file hash, payload location)
-- Mapped activity to **MITRE ATT&CK (11 techniques across 8 tactics)**
-- Developed detection logic for **brute‑force activity, payload execution, and C2 behavior**
+- Correlated authentication, process, file, and network telemetry across all log sources.
+- Reconstructed the full attack timeline from password spray to persistence.
+- Identified key IOCs (IP, domain, file hash, payload path).
+- Mapped activity to MITRE ATT&CK (11 techniques across 8 tactics).
+- Built detection logic for brute‑force activity, payload execution, and C2 traffic.
 
 ---
 
 ## Investigation Evidence
 
-### 1. Initial Access — Password Spraying
+### 1. Initial Access — Password Spray & NTLM Logon
 ![Password Spray](screenshots/01_Password_Spray_and_Successful_Logon.png)
 
 ---
 
-### 2. Defense Evasion — Defender Disabled
+### 2. Privilege Escalation
+![Privilege Escalation](screenshots/02_Privilege_Escalation.png)
+
+---
+
+### 3. Defense Evasion — Defender Disabled
 ![Defender Disabled](screenshots/03_Defender_Disabled.png)
 
 ---
 
-### 3. Payload Execution
-![Execution](screenshots/05_Payload_Execution.png)
+### 4. Payload Delivery
+![Payload Delivery](screenshots/04_Payload_Delivery.png)
 
 ---
 
-### 4. Command & Control (C2)
+### 5. Payload Execution
+![Payload Execution](screenshots/05_Payload_Execution.png)
+
+---
+
+### 6. Command & Control (C2) Traffic
 ![C2](screenshots/06_C2_Communication.png)
 
 ---
 
-### 5. Persistence Mechanism
+### 7. Suricata IDS Alerts
+![Suricata Alerts](screenshots/07_Suricata_IDS_Alerts.png)
+
+---
+
+### 8. Persistence — Scheduled Task
 ![Persistence](screenshots/08_Persistence_Scheduled_Task.png)
 
 ---
 
-### 6. Threat Intelligence Validation
+### 9. Lateral Movement Attempt
+![Lateral Movement](screenshots/09_Lateral_Movement_Validation.png)
+
+---
+
+### 10. Threat Intelligence — AbuseIPDB
 ![AbuseIPDB](screenshots/10_OSINT_AbuseIPDB.png)
+
+---
+
+### 11. Threat Intelligence — VirusTotal (Domain)
+![VT Domain](screenshots/10_OSINT_VirusTotal_Domain.png)
+
+---
+
+### 12. Threat Intelligence — VirusTotal Detection Ratio
+![VT Detection Ratio](screenshots/11_OSINT_VirusTotal_DetectionRatio.png)
+
+---
+
+### 13. Threat Intelligence — Sliver C2 Association
+![VT Sliver](screenshots/11_OSINT_VirusTotal_Sliver.png)
+
+---
+
+## Lessons Learned
+- Correlating Windows, Sysmon, Zeek, and Suricata logs made the attack path clear end‑to‑end.
+- The password spray showed how weak lockout policies quickly lead to real compromise.
+- Privileged access immediately after login stood out and requires closer monitoring.
+- Defender being disabled (5001) was the key pivot point in the intrusion.
+- Payload delivery via Chrome and execution from a user folder highlighted risky paths.
+- RPC, authentication, and process correlation confirmed that lateral movement was attempted but failed.
+- OSINT validation confirmed the external infrastructure was tied to Sliver C2.
+- ATT&CK mapping made the detection and alerting gaps obvious.
+
+---
+
+## Detection Logic
+
+| Detection Category                 | EventCodes / Sysmon IDs        | Evidence Activity |
+|-----------------------------------|--------------------------------|-------------------|
+| Password spraying                 | 4625                           | 157 failed logons from 172.16.0.184 across multiple accounts |
+| Successful NTLM authentication    | 4624 (Logon Type 3)            | NTLM network logon for Ryan.Adams at 12:52:12 |
+| Privilege escalation              | 4672                           | Special privileges assigned immediately after logon |
+| Defender tampering                | 5001, 5007                     | Defender Real-Time Protection disabled under SYSTEM |
+| Payload delivery (file creation)  | Sysmon 11                      | chrome.exe wrote python.exe to C:\Users\Ryan.Adams\Music |
+| Payload execution                 | Sysmon 1                       | python.exe executed from user-writable directory |
+| C2 communication                  | Sysmon 3, Zeek, Suricata       | Connections to 157.245.46.190 on ports 8888/9999 |
+| Persistence via scheduled task    | Sysmon 1 (schtasks.exe)        | Task “PythonUpdate” created to run payload at startup |
+| Lateral movement attempt (RPC)    | Sysmon 3                       | Connections to 172.16.0.7 on ports 135 and 49669 |
+| OSINT infrastructure validation   | VT / AbuseIPDB                 | IP linked to Sliver C2, malicious detections and abuse reports |
+
+Full SPL query set is provided in **spl_queries.txt**.
 
 ---
 
 ## Artifacts
 - **incident_report.pdf** — Full SOC investigation report  
-- **spl_queries.txt** — Key SPL queries used during analysis  
+- **spl_queries.txt** — Complete SPL query set  
 
 *All analysis performed on simulated lab data as part of the MyDFIR Splunk 101 Capstone.*
+
+
 
 
